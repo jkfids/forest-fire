@@ -29,7 +29,7 @@ def animate_forest(forest, interval=100, frames=100, name='forestfire.gif'):
     ax.axis('off')
     
     fig = plt.figure(frameon=False)
-    fig.set_size_inches(12,12)
+    fig.set_size_inches(10,10)
     ax = plt.Axes(fig, [0., 0., 1., 1.])
     ax.set_axis_off()
     fig.add_axes(ax)
