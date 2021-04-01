@@ -13,6 +13,11 @@ from time import time
 # Import ForestFire class
 from forestfire import ForestFire
 
+# Create output directory if it does not exist
+from pathlib import Path
+Path('animations').mkdir(parents=True, exist_ok=True)
+Path('plots').mkdir(parents=True, exist_ok=True)
+
 def animate_forest(forest, interval=100, frames=100, name='forestfire.gif'):
     """Animate a forest fire for a given number of frames (i.e. timesteps)"""
     start = time()
@@ -43,8 +48,8 @@ def animate_forest(forest, interval=100, frames=100, name='forestfire.gif'):
     end = time()
     print(f'Time elapsed: {round((end - start), 2)} seconds')
     
-def plot_sgvt(forest, t_max):
-    """Plot fire size vs t"""
+def plot_rgvt(forest, t_max):
+    """Plot fraction of green and red vs t"""
     fig, ax = plt.subplots()
     ax.set_xlabel('Time')
     ax.set_ylabel('Total Red & Green')
@@ -67,7 +72,7 @@ def plot_sgvt(forest, t_max):
     ax.plot(x, y1, color='red')
     ax.plot(x, y2, color='green')
 
-def pd_firesize(forest, t, N):
+def plot_firesizepd(forest, t, N):
     """"Constructs a histogram of probability vs. fire size after certain time"""
     start = time()
     L = forest.width
@@ -91,24 +96,22 @@ def pd_firesize(forest, t, N):
 #%%
 L = 200
 high_grow_no_lightning = ForestFire([L,L], 0.2, 0.2)
-pd_firesize(high_grow_no_lightning, 250, 1000)
+plot_firesizepd(high_grow_no_lightning, 250, 1000)
     
 #%%
 L = 10
 forest_100=ForestFire([L,L], 0.2, 0.2, spark=True)
-plot_sgvt(forest_100, 200)
+plot_rgvt(forest_100, 200)
 
 #%%
 L = 720
 forest = ForestFire([L,L], 0.0001, 0.01)
-animate_forest(forest, interval=100, frames=300, name='forestfire720.gif')
-
+animate_forest(forest, interval=100, frames=200, name='forestfire720.gif')
 
 L = 480
 forest = ForestFire([L,L], 0.0001, 0.01)
-animate_forest(forest, interval=100, frames=300, name='forestfire480.gif')
-
+animate_forest(forest, interval=100, frames=200, name='forestfire480.gif')
 
 L = 360
 forest = ForestFire([L,L], 0.0001, 0.01)
-animate_forest(forest, interval=100, frames=300, name='forestfire360.gif')
+animate_forest(forest, interval=100, frames=200, name='forestfire360.gif')
