@@ -33,7 +33,7 @@ class ForestFire:
         self.time = 0
         self.g = self.count(1)
         self.g_history = [self.g]
-        self.s = 0
+        self.s = self.count(-1)
         self.s_history = [self.s]
     
     def step(self, steps=1):
