@@ -25,10 +25,11 @@ class ForestFire:
         self.height = shape[0]
         self.f = f
         self.p = p
-        self.grid = np.random.randint(0, 2, size=[self.height, self.width])
+        self.grid = np.ones((self.height, self.width))
+        #self.grid = np.random.randint(0, 2, size=[self.height, self.width])
         self.size = self.width*self.height
         if spark:
-            self.grid[round(self.height/2)][round(self.width/2)] = -1
+            self.grid[round(self.height/3)][round(self.width/3)] = -1
 
         self.time = 0
         self.g = self.count(1)
