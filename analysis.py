@@ -43,7 +43,7 @@ def animate_forest(forest, interval=100, frames=200, name='forestfire.gif'):
     end = time()
     print(f'Time elapsed: {round((end - start), 2)} seconds')
     
-def plot_fractionvt(forest, t_max, green=True):
+def plot_fractionvt(forest, t_max, plot_green=True):
     """Plot fraction of green and red vs t"""
     fig, ax = plt.subplots()
     ax.set_xlabel('Time')
@@ -63,24 +63,25 @@ def plot_fractionvt(forest, t_max, green=True):
     y1 = np.array(forest.s_history)/forest.size
     x = range(len(y1))
     ax.plot(x, y1, color='red')
-    if green:
+    if plot_green:
         y2 = np.array(forest.g_history)/forest.size
         ax.plot(x, y2, color='green')
         
 def gaussian(x, a, b, sigma):
     return a*np.exp(-(x-b)**2/(2*sigma**2))
 
-def plot_firesizepd(forest, t, N, p0):
+def plot_firesizepd(forest, t, N, p0, fit=False):
     """"Constructs a histogram of probability vs. fire size after certain time"""
     start = time()
     forest.step(t+N)
     firesizes = forest.s_history[t:]
-
-    bin_heights, bin_borders, _ = plt.hist(firesizes, density=True, bins='auto')
-    bin_centers = bin_borders[:-1] + np.diff(bin_borders)/2
-    popt, _ = curve_fit(gaussian, bin_centers, bin_heights, p0 = [1/200,7500,1000])
-    X = np.linspace(bin_borders[0], bin_borders[-1], 10000)
-    plt.plot(X, gaussian(X, *popt))
+    
+    if fit:
+        bin_heights, bin_borders, _ = plt.hist(firesizes, density=True, bins='auto')
+        bin_centers = bin_borders[:-1] + np.diff(bin_borders)/2
+        popt, _ = curve_fit(gaussian, bin_centers, bin_heights, p0 = [1/200,7500,1000])
+        X = np.linspace(bin_borders[0], bin_borders[-1], 10000)
+        plt.plot(X, gaussian(X, *popt))
     
     plt.ylabel('Probability')
     plt.xlabel('Fire Size')
@@ -92,7 +93,7 @@ def plot_firesizepd(forest, t, N, p0):
     print(f'Standard deviation = {popt[2]}')
     return popt
 
-# Fire size pdf comparison
+# Fire size pdf subplots
 def plot_firesizepd_multi(forest1, forest2, forest3, t, N):
     start = time()
     forest1.step(t[0]+N)
@@ -106,19 +107,21 @@ def plot_firesizepd_multi(forest1, forest2, forest3, t, N):
     weights1 = np.ones(len(firesizes_history1))/len(firesizes_history1)
     weights2 = np.ones(len(firesizes_history2))/len(firesizes_history2)
     weights3 = np.ones(len(firesizes_history3))/len(firesizes_history3)
-    ax1.hist(firesizes_history1, weights=weights1, bins=100)
+    bin_heights1, bin_borders1, _ = ax1.hist(firesizes_history1, weights=weights1, bins=100)
     ax2.hist(firesizes_history2, weights=weights2, bins=100)
-    ax3.hist(firesizes_history3, weights=weights3, bins=100)
+    bin_heights3, bin_borders3, _ = ax3.hist(firesizes_history3, weights=weights3, bins=100)
+
+    bin_centers1 = bin_borders1[:-1] + np.diff(bin_borders1)/2
+    popt1, _ = curve_fit(gaussian, bin_centers1, bin_heights1, p0 = [1/200, 7500, 100])
+    X1 = np.linspace(bin_borders1[0], bin_borders1[-1], 10000)
+    ax1.plot(X1, gaussian(X1, *popt1))
+    
+    bin_centers3 = bin_borders3[:-1] + np.diff(bin_borders3)/2
+    popt3, _ = curve_fit(gaussian, bin_centers3, bin_heights3, p0 = [1/200, 250, 50])
+    X3 = np.linspace(bin_borders3[0], bin_borders3[-1], 10000)
+    ax3.plot(X3, gaussian(X3, *popt3))
     
     end = time()
     fig.savefig('plots/' + 'firesizepds')
     print(f'Time elapsed: {round((end - start), 2)} seconds')
-    
-L = 200
-forest1 = ForestFire([L,L], 0, 0.5, spark=True)
-l = 0.01
-forest2 = ForestFire([L,L], l, l**2, spark=False)
-forest3 = ForestFire([L,L], l**2, l, spark=False)
-t = [300, 300, 2000]
-N = 10000
-plot_firesizepd_multi(forest1, forest2, forest3, t, N)
+    return popt1, popt3
