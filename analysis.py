@@ -67,10 +67,10 @@ def plot_fractionvt(forest, t_max, plot_green=True):
         y2 = np.array(forest.g_history)/forest.size
         ax.plot(x, y2, color='green')
         
-def gaussian(x, a, b, sigma):
-    return a*np.exp(-(x-b)**2/(2*sigma**2))
+def gaussian(x, mu, sigma):
+    return (1/(sigma*np.sqrt(2*np.pi)))*np.exp(-(x-mu)**2/(2*sigma**2))
 
-def plot_firesizepd(forest, t, N, p0, fit=False):
+def plot_firesizepd(forest, t, N, p0=[0, 0, 0], fit=False):
     """"Constructs a histogram of probability vs. fire size after certain time"""
     start = time()
     forest.step(t+N)
@@ -91,7 +91,8 @@ def plot_firesizepd(forest, t, N, p0, fit=False):
     print(f'Amplitude = {popt[0]}')
     print(f'Mean = {popt[1]}')
     print(f'Standard deviation = {popt[2]}')
-    return popt
+    if fit:
+        return popt
 
 # Fire size pdf subplots
 def plot_firesizepd_multi(forest1, forest2, forest3, t, N):
@@ -104,24 +105,44 @@ def plot_firesizepd_multi(forest1, forest2, forest3, t, N):
     firesizes_history3 = forest3.s_history[t[0]:]
     
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4), dpi=144)
-    weights1 = np.ones(len(firesizes_history1))/len(firesizes_history1)
+    ax1.title.set_text(f'f = {forest1.f}, p = {forest1.p}')
+    ax2.title.set_text(f'f = {forest2.f}, p = {forest2.p}')
+    ax3.title.set_text(f'f = {forest3.f}, p = {forest3.p}')
+    #ax1.set_ylabel('Probability')
+    #fig.text(0.5, 0.05, 'Total Fire Size', ha='center')
+    ax1.set_ylim(top=0.00675)
+    ax3.set_ylim(top=0.00675)
+    #weights1 = np.ones(len(firesizes_history1))/len(firesizes_history1)
     weights2 = np.ones(len(firesizes_history2))/len(firesizes_history2)
-    weights3 = np.ones(len(firesizes_history3))/len(firesizes_history3)
-    bin_heights1, bin_borders1, _ = ax1.hist(firesizes_history1, weights=weights1, bins=100)
+    #weights3 = np.ones(len(firesizes_history3))/len(firesizes_history3)
+    bin_heights1, bin_borders1, _ = ax1.hist(firesizes_history1, density=True, bins='auto')
+    #bin_heights1, bin_borders1, _ = ax1.hist(firesizes_history1, weights=weights1, bins=100)
     ax2.hist(firesizes_history2, weights=weights2, bins=100)
-    bin_heights3, bin_borders3, _ = ax3.hist(firesizes_history3, weights=weights3, bins=100)
+    bin_heights3, bin_borders3, _ = ax3.hist(firesizes_history3, density=True, bins='auto')
+    #bin_heights3, bin_borders3, _ = ax3.hist(firesizes_history3, weights=weights3, bins=100)
 
     bin_centers1 = bin_borders1[:-1] + np.diff(bin_borders1)/2
-    popt1, _ = curve_fit(gaussian, bin_centers1, bin_heights1, p0 = [1/200, 7500, 100])
+    popt1, _ = curve_fit(gaussian, bin_centers1, bin_heights1, p0 = [7500, 100])
     X1 = np.linspace(bin_borders1[0], bin_borders1[-1], 10000)
-    ax1.plot(X1, gaussian(X1, *popt1))
+    ax1.plot(X1, gaussian(X1, *popt1), label=f'μ = {round(popt1[0])}, σ = {round(popt1[1], 2)}')
+    ax1.legend(loc='upper center')
     
     bin_centers3 = bin_borders3[:-1] + np.diff(bin_borders3)/2
-    popt3, _ = curve_fit(gaussian, bin_centers3, bin_heights3, p0 = [1/200, 250, 50])
+    popt3, _ = curve_fit(gaussian, bin_centers3, bin_heights3, p0 = [250, 50])
     X3 = np.linspace(bin_borders3[0], bin_borders3[-1], 10000)
-    ax3.plot(X3, gaussian(X3, *popt3))
+    ax3.plot(X3, gaussian(X3, *popt3), label=f'μ = {round(popt3[0])}, σ = {round(popt3[1], 2)}')
+    ax3.legend(loc='upper center')
     
     end = time()
     fig.savefig('plots/' + 'firesizepds')
     print(f'Time elapsed: {round((end - start), 2)} seconds')
     return popt1, popt3
+
+def calc_steadystate(f, p):
+    fp1 = f*(p + 1)
+    root = np.sqrt(fp1**2 + 10*p*fp1 + 9*p**2)
+    #root = np.sqrt((fp1 + 9*p)*(fp1 + p))
+    x_r = (3*p - fp1 + root)/(8*(p + 1))
+    #x_g = (5*p + fp1 - root)/(8*p)
+    x_g = 1 - (p + 1)*x_r/p
+    return x_r, x_g
