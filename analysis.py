@@ -146,3 +146,19 @@ def calc_steadystate(f, p):
     #x_g = (5*p + fp1 - root)/(8*p)
     x_g = 1 - (p + 1)*x_r/p
     return x_r, x_g
+
+if __name__ == "__main__":
+    L = 200
+    forest = ForestFire([L,L], 0, 0.5, spark=True)
+    forest.step(10000)
+    animate_forest(forest, interval=150, frames=200, name='forestfire_a.gif')
+    
+    L = 200
+    forest = ForestFire([L,L], 0.01, 0.01/1000, spark=True)
+    forest.step(10000)
+    animate_forest(forest, interval=150, frames=200, name='forestfire_b.gif')
+    
+    L = 200
+    forest = ForestFire([L,L], 0.01/1000, 0.01, spark=True)
+    forest.step(10000)
+    animate_forest(forest, interval=150, frames=200, name='forestfire_c.gif')
