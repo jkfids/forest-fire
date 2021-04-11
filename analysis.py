@@ -151,14 +151,14 @@ if __name__ == "__main__":
     L = 200
     forest = ForestFire([L,L], 0, 0.5, spark=True)
     forest.step(10000)
-    animate_forest(forest, interval=150, frames=200, name='forestfire_a.gif')
+    animate_forest(forest, interval=100, frames=200, name='forestfire_a.gif')
     
     L = 200
     forest = ForestFire([L,L], 0.01, 0.01/1000, spark=True)
     forest.step(10000)
-    animate_forest(forest, interval=150, frames=200, name='forestfire_b.gif')
+    animate_forest(forest, interval=100, frames=200, name='forestfire_b.gif')
     
     L = 200
     forest = ForestFire([L,L], 0.01/1000, 0.01, spark=True)
     forest.step(10000)
-    animate_forest(forest, interval=150, frames=200, name='forestfire_c.gif')
+    animate_forest(forest, interval=100, frames=200, name='forestfire_c.gif')
