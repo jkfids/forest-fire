@@ -1,2 +1,2 @@
 # forest-fire
-Forest-fire model
+Main ForestFire class in forestfire.py
