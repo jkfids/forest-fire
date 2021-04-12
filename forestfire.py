@@ -20,7 +20,7 @@ class ForestFire:
            otherwise it becomes red with probability f
         3. Black site becomes green with probability p
     """
-    def __init__(self, shape=[200,200], f=0, p=0.5, spark=True):
+    def __init__(self, shape=[200,200], f=0, p=0.5, spark=True, trackw=False):
         self.width = shape[1]
         self.height = shape[0]
         self.f = f
@@ -36,7 +36,12 @@ class ForestFire:
         self.g_history = [self.g]
         self.s = self.count(-1)
         self.s_history = [self.s]
-    
+        self.trackw = trackw
+        if trackw:
+            self.w_history = []
+            self.waiting_times = np.zeros([self.height, self.width])
+            self.w = 0
+        
     def step(self, steps=1):
         """Timestep the forest fire by a specified number of steps"""
         for step in range(steps):
@@ -53,6 +58,12 @@ class ForestFire:
             self.s = self.count(-1)
             self.s_history.append(self.s)
             self.time += 1
+            
+            if self.trackw:       
+                self.waiting_times += (self.grid == 0) + (self.grid == 1)
+                w = self.waiting_times*burnt
+                self.w_history = np.append(self.w_history, w[w != 0])
+                self.waiting_times -= self.waiting_times*burnt            
     
     def spread_grid(self):
         """Constructs a spread grid with np.roll"""

@@ -96,6 +96,7 @@ def plot_firesizepd(forest, t, N, p0=[0, 0, 0], fit=False):
 
 # Fire size pdf subplots
 def plot_firesizepd_multi(forest1, forest2, forest3, t, N):
+    """Plot multiple fire size probability distributions"""
     start = time()
     forest1.step(t[0]+N)
     forest2.step(t[1]+N)
@@ -138,7 +139,39 @@ def plot_firesizepd_multi(forest1, forest2, forest3, t, N):
     print(f'Time elapsed: {round((end - start), 2)} seconds')
     return popt1, popt3
 
+def plot_waitingtimespd_multi(forest1, forest2, forest3, t, N):
+    """
+    Multiple plots of the probability distribution for waiting times
+    between fires in individual sites
+    """
+    start = time()
+    forest1.step(t+N)
+    forest2.step(t+N)
+    forest3.step(t+N)
+    w_history1 = forest1.w_history[-100000:]
+    w_history2 = forest2.w_history
+    w_history3 = forest3.w_history[-500000:]
+
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4), dpi=144)
+    ax1.title.set_text(f'f = {forest1.f}, p = {forest1.p}')
+    ax2.title.set_text(f'f = {forest2.f}, p = {forest2.p}')
+    ax3.title.set_text(f'f = {forest3.f}, p = {forest3.p}')
+    ax1.xaxis.set_ticks(range(2, 13, 1))
+    ax1.set_xlim(left=2, right=12)
+    ax2.set_xlim(right=60)
+    ax3.set_xlim(right=600)
+    
+    weights1 = np.ones(len(w_history1))/len(w_history1)
+    ax1.hist(w_history1, weights=weights1, bins=100)
+    ax2.hist(w_history2, density=True, bins='auto')
+    ax3.hist(w_history3, density=True, bins='auto')
+
+    end = time()
+    fig.savefig('plots/' + 'waitingtimespds')
+    print(f'Time elapsed: {round((end - start), 2)} seconds')
+
 def calc_steadystate(f, p):
+    """Calculate steady state fractions"""
     fp1 = f*(p + 1)
     root = np.sqrt(fp1**2 + 10*p*fp1 + 9*p**2)
     #root = np.sqrt((fp1 + 9*p)*(fp1 + p))
@@ -146,19 +179,3 @@ def calc_steadystate(f, p):
     #x_g = (5*p + fp1 - root)/(8*p)
     x_g = 1 - (p + 1)*x_r/p
     return x_r, x_g
-
-if __name__ == "__main__":
-    L = 200
-    forest = ForestFire([L,L], 0, 0.5, spark=True)
-    forest.step(10000)
-    animate_forest(forest, interval=100, frames=200, name='forestfire_a.gif')
-    
-    L = 200
-    forest = ForestFire([L,L], 0.01, 0.01/1000, spark=True)
-    forest.step(10000)
-    animate_forest(forest, interval=100, frames=200, name='forestfire_b.gif')
-    
-    L = 200
-    forest = ForestFire([L,L], 0.01/1000, 0.01, spark=True)
-    forest.step(10000)
-    animate_forest(forest, interval=100, frames=200, name='forestfire_c.gif')
