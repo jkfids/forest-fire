@@ -1,2 +1,3 @@
 # forest-fire
-Forest-fire model
+forestfire.py: Contains ForestFire class
+analysis.py: Forest fire analysis functions
