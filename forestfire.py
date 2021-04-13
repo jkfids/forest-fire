@@ -48,10 +48,11 @@ class ForestFire:
             rand = np.random.rand(self.height, self.width)
             burnt = self.grid == -1
             regrow = (self.grid == 0)&(rand < self.p)
-            spread = -2*((self.grid == 1)&self.spread_grid())
-            lightning = -2*((self.grid == 1)&(rand < self.f))
+            spread = ((self.grid == 1)&self.spread_grid())
+            lightning = ((self.grid == 1)&(rand < self.f))
+            fire = -2*(spread | lightning)
             
-            self.grid += spread + burnt + regrow + lightning
+            self.grid += burnt + regrow + fire
     
             self.g = self.count(1)
             self.g_history.append(self.g)
